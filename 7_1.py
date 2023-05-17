@@ -1,22 +1,27 @@
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 import time
 
 dac = [10, 9, 11, 5, 6, 13, 19, 26][::-1]
+leds = [24, 25, 8, 7, 12, 16, 20, 21]
 comp = 4
 troyka = 17
-GPIO.setmode(GPIO.BCM)
+
+"""GPIO.setmode(GPIO.BCM)
 GPIO.setup(dac, GPIO.OUT)
 GPIO.setup(comp, GPIO.IN)
-GPIO.setup(troyka, GPIO.OUT, initial=1)
+GPIO.setup(troyka, GPIO.OUT, initial=1)"""
 number = [0] * 8
 
 
-#def Tr_v():
-    
+def tr_v():
+    return GPIO.input(comp)
 
 
 def dec2bin(val):
     return [int(bit) for bit in format(val, "b").zfill(8)]
+
+def binShow(val):
+    GPIO.output(leds, dec2bin(val))
 
 def adc():
     for i in range(256):
@@ -27,35 +32,46 @@ def adc():
             return i
     return 0
 
-
 try:
     meas = []
     period = 0.01
     start = time.time()
-    # подать на тройку 3.3В
-    while напряжение на конденсаторе < 0.97*3.3:
-        meas.append(напряжение на конденсаторе)
+
+    #GPIO.output(troyka, 1)
+    #v = tr_v()
+    v = 0
+    while v < 0.97*3.3:
+        meas.append(v)
+        #v = tr_v()
+        v += 0.1
         time.sleep(period)
-    # подать на тройку 0В
-    while напряжение на конденсаторе > 0.02*3.3:
-        meas.append(напряжение на конденсаторе)
+
+    #GPIO.output(troyka, 0)
+    #v = tr_v()
+    v = 3.3
+    while v > 0.02*3.3:
+        meas.append(v)
+        #v = tr_v()
+        v -= 0.1
         time.sleep(period)
+
     end = time.time()
 
     meas = [str(item) for item in meas]
 
     with open("data.txt", "w") as outfile:
-        outfile.write("./".join(meas))
+        outfile.write("\n".join(meas))
 
     with open("settings.txt", "w") as setfile:
-        setfile.write(str())
-        setfile.write(str())
+        setfile.write(str(1/period))
+        setfile.write("\n")
+        setfile.write(str("step"))
 
     print(f"Duration: {end-start}\n")
     print(f"Period: {period}\n")
-    print(f"Descr: {discrt}\n")
-    print(f"Kvant: {kvant}\n")
-
+    print(f"Descr: {1/period}\n")
+    print(f"Kvant: ???\n")
+    
 finally:
-    GPIO.output(dac, 0)
-    GPIO.cleanup()
+    """GPIO.output(dac, 0)
+    GPIO.cleanup()"""
